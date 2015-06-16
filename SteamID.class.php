@@ -14,7 +14,7 @@ class SteamID {
 	public $accountid;
 
 	/**
-	 * SteamID unvierses
+	 * SteamID universes
 	 */
 	const UNIVERSE_INVALID = 0;
 	const UNIVERSE_PUBLIC = 1;
