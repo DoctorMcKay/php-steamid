@@ -222,6 +222,30 @@ class SteamID {
 		return (string) $this->getSteamID64();
 	}
 
+	/**
+	 * Returns whether or not this SteamID is for a clan (Steam group) chat
+	 * @return bool
+	 */
+	public function isClanChat() {
+		return $this->type == self::TYPE_CHAT && ($this->instance & self::CHAT_INSTANCE_FLAG_CLAN);
+	}
+
+	/**
+	 * Returns whether or not this SteamID is for a lobby
+	 * @return bool
+	 */
+	public function isLobbyChat() {
+		return $this->type == self::TYPE_CHAT && ($this->instance & self::CHAT_INSTANCE_FLAG_LOBBY);
+	}
+
+	/**
+	 * Returns whether or not this SteamID is for a matchmaking lobby
+	 * @return bool
+	 */
+	public function isMMSLobbyChat() {
+		return $this->type == self::TYPE_CHAT && ($this->instance & self::CHAT_INSTANCE_FLAG_MMSLOBBY);
+	}
+
 	private static function getTypeFromChar($char) {
 		foreach(self::$typeChars as $type => $typechar) {
 			if($typechar == $char) {
