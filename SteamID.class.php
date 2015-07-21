@@ -71,7 +71,8 @@ class SteamID {
 		self::TYPE_PENDING => 'P',
 		self::TYPE_CONTENT_SERVER => 'C',
 		self::TYPE_CLAN => 'g',
-		self::TYPE_CHAT => 'T'
+		self::TYPE_CHAT => 'T',
+		self::TYPE_ANON_USER => 'a'
 	];
 
 	/**
