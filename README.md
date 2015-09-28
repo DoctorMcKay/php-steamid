@@ -13,7 +13,7 @@ require_once 'vendor/autoload.php';
 
 use SteamID\SteamID;
 
-$steamid = new SteamID('76561198046627751');
+$steamid = new SteamID('76561197960435530');
 
 echo "SteamID2: " . $steamid->getSteam2RenderedID() . PHP_EOL;
 echo "SteamID3: " . $steamid->getSteam3RenderedID() . PHP_EOL;
