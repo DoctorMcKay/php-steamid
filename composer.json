@@ -1,0 +1,19 @@
+{
+    "name": "DoctorMcKay/php-steamid",
+    "description": "PHP SteamID Manipulation",
+    "type": "library",
+    "require": {
+        "phpseclib/phpseclib": "0.3.10"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexander Corn",
+            "email": "mckay@doctormckay.com"
+        },
+		{
+			"name": "Nikki",
+			"email": "nikki@nikkii.us"
+		}
+    ]
+}
