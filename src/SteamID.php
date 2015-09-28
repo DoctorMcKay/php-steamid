@@ -235,7 +235,7 @@ class SteamID {
 			$ret = $ret->add(new Math_BigInteger($this->accountid));
 			return $ret->toString();
 		}
-		return ($this->universe << 56) | ($this->type << 52) | ($this->instance << 32) | ($this->accountid);
+		return (string) (($this->universe << 56) | ($this->type << 52) | ($this->instance << 32) | ($this->accountid));
 	}
 
 	/**
