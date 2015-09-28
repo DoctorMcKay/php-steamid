@@ -15,5 +15,10 @@
 			"name": "Nikki",
 			"email": "nikki@nikkii.us"
 		}
-    ]
+    ],
+	"autoload": {
+		"psr-4": {
+			"SteamID\\": "src/"
+		}
+	}
 }
