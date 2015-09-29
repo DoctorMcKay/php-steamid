@@ -1,8 +1,14 @@
 <?php
 
+namespace SteamID;
+
+use Math_BigInteger;
+
 /**
  * Class SteamID
- * Only works on 64-bit PHP.
+ * A modified version of Dr McKay's SteamID class to work with BigInteger from phpseclib.
+ *
+ * It will use 64-bit integers if possible, if not it'll use either gmp or bcmath from phpseclib.
  */
 class SteamID {
 	/**
@@ -80,7 +86,7 @@ class SteamID {
 	 * @throws Exception If the input format was not recognized as a SteamID
 	 */
 	public function __construct($id = null) {
-		if(!$id) {
+		if (!$id) {
 			$this->universe = self::UNIVERSE_INVALID;
 			$this->type = self::TYPE_INVALID;
 			$this->instance = self::INSTANCE_ALL;
@@ -88,57 +94,66 @@ class SteamID {
 			return;
 		}
 
-		if(preg_match('/^STEAM_([0-5]):([0-1]):([0-9]+)$/', $id, $matches)) {
+		if (preg_match('/^STEAM_([0-5]):([0-1]):([0-9]+)$/', $id, $matches)) {
 			// Steam2 ID
-			if($matches[1] <= self::UNIVERSE_PUBLIC) {
+			if ($matches[1] <= self::UNIVERSE_PUBLIC) {
 				$this->universe = self::UNIVERSE_PUBLIC;
 			} else {
-				$this->universe = (int) $matches[1];
+				$this->universe = (int)$matches[1];
 			}
 
 			$this->type = self::TYPE_INDIVIDUAL;
 			$this->instance = self::INSTANCE_DESKTOP;
-			$this->accountid = (int) ($matches[3] * 2) + $matches[2];
-		} elseif(preg_match('/^\\[([a-zA-Z]):([0-5]):([0-9]+)(:[0-9]+)?\\]$/', $id, $matches)) {
+			$this->accountid = (int)($matches[3] * 2) + $matches[2];
+		} elseif (preg_match('/^\\[([a-zA-Z]):([0-5]):([0-9]+)(:[0-9]+)?\\]$/', $id, $matches)) {
 			// Steam3 ID
-			$this->universe = (int) $matches[2];
-			$this->accountid = (int) $matches[3];
+			$this->universe = (int)$matches[2];
+			$this->accountid = (int)$matches[3];
 
 			$type_char = $matches[1];
 
-			if($matches[4]) {
-				$this->instance = (int) substr($matches[4], 1);
+			if (!empty($matches[4])) {
+				$this->instance = (int)substr($matches[4], 1);
 			} else {
-				switch($type_char) {
-					case 'g':
-					case 'T':
-					case 'c':
-					case 'L':
-						$this->instance = self::INSTANCE_ALL;
-						break;
+				switch ($type_char) {
+				case 'g':
+				case 'T':
+				case 'c':
+				case 'L':
+					$this->instance = self::INSTANCE_ALL;
+					break;
 
-					default:
-						$this->instance = self::INSTANCE_DESKTOP;
+				default:
+					$this->instance = self::INSTANCE_DESKTOP;
 				}
 			}
 
-			if($type_char == 'c') {
+			if ($type_char == 'c') {
 				$this->instance |= self::CHAT_INSTANCE_FLAG_CLAN;
 				$this->type = self::TYPE_CHAT;
-			} elseif($type_char == 'L') {
+			} elseif ($type_char == 'L') {
 				$this->instance |= self::CHAT_INSTANCE_FLAG_LOBBY;
 				$this->type = self::TYPE_CHAT;
 			} else {
 				$this->type = self::getTypeFromChar($type_char);
 			}
-		} elseif(!is_numeric($id)) {
+		} elseif (!is_numeric($id)) {
 			throw new Exception("Unknown ID format");
 		} else {
 			// SteamID64
-			$this->universe = $id >> 56;
-			$this->type = ($id >> 52) & 0xF;
-			$this->instance = ($id >> 32) & 0xFFFFF;
-			$this->accountid = $id & 0xFFFFFFFF;
+			if (PHP_INT_SIZE == 4) {
+				// Wrapper for BigInteger
+				$bigint = new Math_BigInteger($id);
+				$this->universe = (int)$bigint->bitwise_rightShift(56)->toString();
+				$this->type = ((int)$bigint->bitwise_rightShift(52)->toString()) & 0xF;
+				$this->instance = ((int)$bigint->bitwise_rightShift(32)->toString()) & 0xFFFFF;
+				$this->accountid = (int)$bigint->bitwise_and(new Math_BigInteger('0xFFFFFFFF', 16))->toString();
+			} else {
+				$this->universe = $id >> 56;
+				$this->type = ($id >> 52) & 0xF;
+				$this->instance = ($id >> 32) & 0xFFFFF;
+				$this->accountid = $id & 0xFFFFFFFF;
+			}
 		}
 	}
 
@@ -146,23 +161,23 @@ class SteamID {
 	 * @return bool True if the SteamID is considered "valid", false otherwise
 	 */
 	public function isValid() {
-		if($this->type <= self::TYPE_INVALID || $this->type > self::TYPE_ANON_USER) {
+		if ($this->type <= self::TYPE_INVALID || $this->type > self::TYPE_ANON_USER) {
 			return false;
 		}
 
-		if($this->universe <= self::UNIVERSE_INVALID || $this->universe > self::UNIVERSE_DEV) {
+		if ($this->universe <= self::UNIVERSE_INVALID || $this->universe > self::UNIVERSE_DEV) {
 			return false;
 		}
 
-		if($this->type == self::TYPE_INDIVIDUAL && ($this->accountid === 0 || $this->instance > self::INSTANCE_WEB)) {
+		if ($this->type == self::TYPE_INDIVIDUAL && ($this->accountid === 0 || $this->instance > self::INSTANCE_WEB)) {
 			return false;
 		}
 
-		if($this->type == self::TYPE_CLAN && ($this->accountid === 0 || $this->instance != self::INSTANCE_ALL)) {
+		if ($this->type == self::TYPE_CLAN && ($this->accountid === 0 || $this->instance != self::INSTANCE_ALL)) {
 			return false;
 		}
 
-		if($this->type == self::TYPE_GAMESERVER && $this->accountid === 0) {
+		if ($this->type == self::TYPE_GAMESERVER && $this->accountid === 0) {
 			return false;
 		}
 
@@ -176,11 +191,11 @@ class SteamID {
 	 * @throws Exception If this isn't an individual account SteamID
 	 */
 	public function getSteam2RenderedID($newerFormat = false) {
-		if($this->type != self::TYPE_INDIVIDUAL) {
+		if ($this->type != self::TYPE_INDIVIDUAL) {
 			throw new Exception("Can't get Steam2 rendered ID for non-individual ID");
 		} else {
 			$universe = $this->universe;
-			if($universe == 1 && !$newerFormat) {
+			if ($universe == 1 && !$newerFormat) {
 				$universe = 0;
 			}
 
@@ -195,9 +210,9 @@ class SteamID {
 	public function getSteam3RenderedID() {
 		$type_char = self::$typeChars[$this->type] ? self::$typeChars[$this->type] : 'i';
 
-		if($this->instance & self::CHAT_INSTANCE_FLAG_CLAN) {
+		if ($this->instance & self::CHAT_INSTANCE_FLAG_CLAN) {
 			$type_char = 'c';
-		} elseif($this->instance & self::CHAT_INSTANCE_FLAG_LOBBY) {
+		} elseif ($this->instance & self::CHAT_INSTANCE_FLAG_LOBBY) {
 			$type_char = 'L';
 		}
 
@@ -209,10 +224,18 @@ class SteamID {
 
 	/**
 	 * Gets the SteamID as a 64-bit integer
-	 * @return int
+	 * @return string
 	 */
 	public function getSteamID64() {
-		return ($this->universe << 56) | ($this->type << 52) | ($this->instance << 32) | ($this->accountid);
+		if (PHP_INT_SIZE == 4) {
+			$ret = new Math_BigInteger();
+			$ret = $ret->add((new Math_BigInteger($this->universe))->bitwise_leftShift(56));
+			$ret = $ret->add((new Math_BigInteger($this->type))->bitwise_leftShift(52));
+			$ret = $ret->add((new Math_BigInteger($this->instance))->bitwise_leftShift(32));
+			$ret = $ret->add(new Math_BigInteger($this->accountid));
+			return $ret->toString();
+		}
+		return (string) (($this->universe << 56) | ($this->type << 52) | ($this->instance << 32) | ($this->accountid));
 	}
 
 	/**
@@ -220,7 +243,7 @@ class SteamID {
 	 * @return string
 	 */
 	public function __toString() {
-		return (string) $this->getSteamID64();
+		return (string)$this->getSteamID64();
 	}
 
 	/**
@@ -248,8 +271,8 @@ class SteamID {
 	}
 
 	private static function getTypeFromChar($char) {
-		foreach(self::$typeChars as $type => $typechar) {
-			if($typechar == $char) {
+		foreach (self::$typeChars as $type => $typechar) {
+			if ($typechar == $char) {
 				return $type;
 			}
 		}
