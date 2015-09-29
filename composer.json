@@ -1,5 +1,5 @@
 {
-    "name": "mckay/steamid",
+    "name": "doctormckay/steamid",
     "description": "PHP SteamID Manipulation",
     "type": "library",
     "require": {
