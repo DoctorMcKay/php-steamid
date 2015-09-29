@@ -99,21 +99,21 @@ class SteamID {
 			if ($matches[1] <= self::UNIVERSE_PUBLIC) {
 				$this->universe = self::UNIVERSE_PUBLIC;
 			} else {
-				$this->universe = (int)$matches[1];
+				$this->universe = (int) $matches[1];
 			}
 
 			$this->type = self::TYPE_INDIVIDUAL;
 			$this->instance = self::INSTANCE_DESKTOP;
-			$this->accountid = (int)($matches[3] * 2) + $matches[2];
+			$this->accountid = (int) ($matches[3] * 2) + $matches[2];
 		} elseif (preg_match('/^\\[([a-zA-Z]):([0-5]):([0-9]+)(:[0-9]+)?\\]$/', $id, $matches)) {
 			// Steam3 ID
-			$this->universe = (int)$matches[2];
-			$this->accountid = (int)$matches[3];
+			$this->universe = (int) $matches[2];
+			$this->accountid = (int) $matches[3];
 
 			$type_char = $matches[1];
 
 			if (!empty($matches[4])) {
-				$this->instance = (int)substr($matches[4], 1);
+				$this->instance = (int) substr($matches[4], 1);
 			} else {
 				switch ($type_char) {
 				case 'g':
@@ -144,10 +144,10 @@ class SteamID {
 			if (PHP_INT_SIZE == 4) {
 				// Wrapper for BigInteger
 				$bigint = new Math_BigInteger($id);
-				$this->universe = (int)$bigint->bitwise_rightShift(56)->toString();
-				$this->type = ((int)$bigint->bitwise_rightShift(52)->toString()) & 0xF;
-				$this->instance = ((int)$bigint->bitwise_rightShift(32)->toString()) & 0xFFFFF;
-				$this->accountid = (int)$bigint->bitwise_and(new Math_BigInteger('0xFFFFFFFF', 16))->toString();
+				$this->universe = (int) $bigint->bitwise_rightShift(56)->toString();
+				$this->type = ((int) $bigint->bitwise_rightShift(52)->toString()) & 0xF;
+				$this->instance = ((int) $bigint->bitwise_rightShift(32)->toString()) & 0xFFFFF;
+				$this->accountid = (int) $bigint->bitwise_and(new Math_BigInteger('0xFFFFFFFF', 16))->toString();
 			} else {
 				$this->universe = $id >> 56;
 				$this->type = ($id >> 52) & 0xF;
@@ -243,7 +243,7 @@ class SteamID {
 	 * @return string
 	 */
 	public function __toString() {
-		return (string)$this->getSteamID64();
+		return $this->getSteamID64();
 	}
 
 	/**
