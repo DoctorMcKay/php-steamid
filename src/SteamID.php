@@ -2,7 +2,9 @@
 
 namespace SteamID;
 
+use Exception;
 use Math_BigInteger;
+
 
 /**
  * Class SteamID
