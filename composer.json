@@ -3,7 +3,7 @@
     "description": "PHP SteamID Manipulation",
     "type": "library",
     "require": {
-        "phpseclib/phpseclib": "0.3.10"
+        "phpseclib/phpseclib": "^3.0.10"
     },
     "license": "MIT",
     "authors": [

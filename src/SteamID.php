@@ -3,7 +3,7 @@
 namespace SteamID;
 
 use Exception;
-use Math_BigInteger;
+use phpseclib3\Math\BigInteger;
 
 
 /**
@@ -145,11 +145,11 @@ class SteamID {
 			// SteamID64
 			if (PHP_INT_SIZE == 4) {
 				// Wrapper for BigInteger
-				$bigint = new Math_BigInteger($id);
+				$bigint = new BigInteger($id);
 				$this->universe = (int) $bigint->bitwise_rightShift(56)->toString();
 				$this->type = ((int) $bigint->bitwise_rightShift(52)->toString()) & 0xF;
 				$this->instance = ((int) $bigint->bitwise_rightShift(32)->toString()) & 0xFFFFF;
-				$this->accountid = (int) $bigint->bitwise_and(new Math_BigInteger('0xFFFFFFFF', 16))->toString();
+				$this->accountid = (int) $bigint->bitwise_and(new BigInteger('0xFFFFFFFF', 16))->toString();
 			} else {
 				$this->universe = $id >> 56;
 				$this->type = ($id >> 52) & 0xF;
@@ -230,11 +230,11 @@ class SteamID {
 	 */
 	public function getSteamID64() {
 		if (PHP_INT_SIZE == 4) {
-			$ret = new Math_BigInteger();
-			$ret = $ret->add((new Math_BigInteger($this->universe))->bitwise_leftShift(56));
-			$ret = $ret->add((new Math_BigInteger($this->type))->bitwise_leftShift(52));
-			$ret = $ret->add((new Math_BigInteger($this->instance))->bitwise_leftShift(32));
-			$ret = $ret->add(new Math_BigInteger($this->accountid));
+			$ret = new BigInteger();
+			$ret = $ret->add((new BigInteger($this->universe))->bitwise_leftShift(56));
+			$ret = $ret->add((new BigInteger($this->type))->bitwise_leftShift(52));
+			$ret = $ret->add((new BigInteger($this->instance))->bitwise_leftShift(32));
+			$ret = $ret->add(new BigInteger($this->accountid));
 			return $ret->toString();
 		}
 		return (string) (($this->universe << 56) | ($this->type << 52) | ($this->instance << 32) | ($this->accountid));
